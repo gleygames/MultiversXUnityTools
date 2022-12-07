@@ -2,3 +2,7 @@
 	path = Assets/Common
 	url = https://github.com/gleygames/Common.git
 	branch = main
+[submodule "Assets/VersionSetupWindow"]
+	path = Assets/VersionSetupWindow
+	url = https://github.com/gleygames/VersionSetupWindow.git
+	branch = master
