@@ -6,3 +6,7 @@
 	path = Assets/VersionSetupWindow
 	url = https://github.com/gleygames/VersionSetupWindow.git
 	branch = master
+[submodule "Assets/AboutWindow"]
+	path = Assets/AboutWindow
+	url = https://github.com/gleygames/AboutWindow.git
+	branch = master
