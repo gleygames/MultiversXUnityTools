@@ -1,0 +1,4 @@
+[submodule "Assets/Common"]
+	path = Assets/Common
+	url = https://github.com/gleygames/Common.git
+	branch = main
