@@ -40,7 +40,7 @@ namespace MultiversXUnityTools
         }
 
         //Open Settings Window
-        [MenuItem("Tools/MultiversX Unity Tools/Settings Window", false, 50)]
+        [MenuItem("Tools/MultiversX Tools/Settings Window", false, 50)]
         private static void Init()
         {
             if (!LoadRootFolder())
@@ -113,7 +113,7 @@ namespace MultiversXUnityTools
                 new ContactButton(new GUIContent(" Documentation", iconReferences.websiteIcon),"https://github.com/chainofindustry/MultiversXUnityTools/wiki"),
                 new ContactButton(new GUIContent(" Youtube", iconReferences.youtubeIcon),"https://www.youtube.com/channel/UCmvJB1_IobMjYKCNBtuZBog"),
                 new ContactButton(new GUIContent(" Twitter", iconReferences.twitterIcon),"https://twitter.com/XUnityTools"),
-                //new ContactButton(new GUIContent(" Discord", iconReferences.discordIcon),"https://discord.gg/7eSvKKW"),            
+                new ContactButton(new GUIContent(" Discord", iconReferences.discordIcon),"https://discord.gg/hQXw3rbQw7"),            
             };
         }
 
@@ -323,8 +323,10 @@ namespace MultiversXUnityTools
         /// </summary>
         private void SaveSettings()
         {
-            CreateSupportedAPIEnum();
-            CreateEndPointEnum();
+            if (!CreateSupportedAPIEnum())
+                return;
+            if (!CreateEndPointEnum())
+                return;
             DeleteOldAPIFiles();
             for (int i = 0; i < supportedAPIs.Count; i++)
             {
@@ -334,6 +336,7 @@ namespace MultiversXUnityTools
             EditorUtility.SetDirty(apiSettings);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
+            Debug.Log("Save Success");
         }
 
 
@@ -365,9 +368,24 @@ namespace MultiversXUnityTools
         /// <summary>
         /// Generate SupportedAPIs -> An enum to help access the APIs at runtime
         /// </summary>
-        private void CreateSupportedAPIEnum()
+        private bool CreateSupportedAPIEnum()
         {
-            string text =
+            for (int i = 0; i < supportedAPIs.Count; i++)
+            {
+                if (string.IsNullOrEmpty(supportedAPIs[i].apiName) || string.IsNullOrEmpty(supportedAPIs[i].baseAddress))
+                {
+                    Debug.LogError("Supported APIs fields cannot be empty. Your settings are not saved");
+                    return false;
+                }
+                for(int j=0;j<supportedAPIs[i].endpoints.Count;j++)
+                {
+                    if(string.IsNullOrEmpty(supportedAPIs[i].endpoints[j].name)|| string.IsNullOrEmpty(supportedAPIs[i].endpoints[j].resourceName)|| string.IsNullOrEmpty(supportedAPIs[i].endpoints[j].baseAddress))
+                    {
+                        Debug.LogWarning($"{supportedAPIs[i].apiName} has endpoints with empty fields: Name:'{supportedAPIs[i].endpoints[j].name}', BaseAddress: '{supportedAPIs[i].endpoints[j].baseAddress}', ResourceName:'{supportedAPIs[i].endpoints[j].resourceName}'");
+                    }
+                }
+            }
+                string text =
             $"namespace {Constants.NAMESPACE_NAME}\n" +
             "{\n" +
             "\tpublic enum SupportedAPIs\n" +
@@ -379,13 +397,14 @@ namespace MultiversXUnityTools
             }
             text += "\t}\n}";
             File.WriteAllText($"{Application.dataPath}/{rootWithoutAssets}/{Constants.PROVIDER_FOLDER}/SupportedAPIs.cs", text);
+            return true;
         }
 
 
         /// <summary>
         /// Generate EndpointNames enum -> Used to easy access the endpoints at runtime
         /// </summary>
-        private void CreateEndPointEnum()
+        private bool CreateEndPointEnum()
         {
             List<string> enumElements = new List<string>();
             List<string> debugValues = new List<string>();
@@ -412,6 +431,11 @@ namespace MultiversXUnityTools
                     {
                         if (supportedAPIs[i].endpoints.FirstOrDefault(p => p.name == enumElements[j]) == null)
                         {
+                            if(string.IsNullOrEmpty(enumElements[j]))
+                            {
+                                Debug.LogError($"{supportedAPIs[i].apiName} has empty endpoints. Endpoint fields cannot be empty. Your settings are not saved");
+                                return false;
+                            }
                             Debug.LogWarning($"Endpoint {enumElements[j]} from API {debugValues[j]} was not fount in API {supportedAPIs[i].apiName}");
                         }
                     }
@@ -430,6 +454,7 @@ namespace MultiversXUnityTools
             }
             text += "\t}\n}";
             File.WriteAllText($"{Application.dataPath}/{rootWithoutAssets}/{Constants.PROVIDER_FOLDER}/EndpointNames.cs", text);
+            return true;
         }
 
 
